@@ -1,0 +1,43 @@
+upstream database {
+  postgres_server  127.0.0.1 dbname=retriever_development
+  user=nginx_user password=nginx_password;
+}
+
+server {
+  listen   27027;
+  server_name localhost;
+  access_log logs/localhost.access.log combined;
+
+  location = /report {
+    add_header Content-Type text/plain;
+    postgres_pass database;
+    if ($request_method != POST) {
+      return 405;
+    }
+
+    postgres_escape $remote_addr_escaped $remote_addr;
+    postgres_escape $request_escaped $request;
+
+    set $query "INSERT INTO reports (from, data) VALUES ($remote_addr_escaped, 'whateverz')";
+    postgres_query POST $query;
+    # return 200;
+    return 200 $request_body;
+  }
+
+  location = / {
+    add_header Content-Type text/plain;
+    return 200;
+  }
+
+  location = /test {
+    add_header Content-Type text/plain;
+    set $resp "$request_body stuff";
+    return 200 $resp;
+  }
+
+  location = /csp_test {
+    add_header Content-Security-Policy "style-src http://localhost; report-uri http://localhost:27027/report";
+    add_header Content-Type text/html;
+    return 200 "<html><head><link rel='stylesheet' type='text/css' href='https://www.abv.bg/css/styles_20180329.css'></head></html>";
+  }
+}
