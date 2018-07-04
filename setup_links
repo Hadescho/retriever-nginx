@@ -1,0 +1,41 @@
+#!/usr/bin/env zsh
+
+current_file_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+nginx_config_dir="/etc/nginx"
+
+# Remove already existing files
+conf=$nginx_config_dir/nginx.conf
+if [ -h $conf -o -f $conf ]; then
+  echo "Removing $conf"
+  rm $conf
+fi
+
+retriever=$nignx_config_dir/sites-available/retriever
+if [ -h $retriever -o -f $retriever ]; then
+  echo "Removing $retriever"
+  rm $retriever
+fi
+
+
+echo "Linking $current_file_dir/nginx.conf to $nginx_config_dir/nginx.conf"
+ln -s -T "$current_file_dir"/nginx.conf $conf
+
+sites_available=$nginx_config_dir/sites-available
+if [ ! -d $sites_available ];then
+  echo "Creating $sites_available"
+  mkdir $sites_available
+fi
+
+echo "Linking $current_file_dir/sites-available/retriever to $sites_available/retriever"
+ln -s -T "$current_file_dir"/sites-available/retriever $sites_available/retriever
+
+sites_enabled=$nginx_config_dir/sites-enabled
+if [ ! -d $sites_enabled ];then
+  echo "Creating $sites_enabled"
+  mkdir $sites_enabled
+  if [ ! -h $sites_enabled/retriever ]; then
+    echo "Creating ln in sites-enabled"
+    ln -s -T "$sites_available/retriever" "$sites_enabled/retriever"
+  fi
+fi
+
