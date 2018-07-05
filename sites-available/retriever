@@ -19,9 +19,28 @@ server {
     postgres_escape $remote_addr_escaped $remote_addr;
     postgres_escape $request_escaped $request_body;
 
-    add_header X-Debug $request_escaped;
-    postgres_query POST "INSERT INTO reports (remote_addr, data, created_at, updated_at) VALUES ($remote_addr_escaped, $request_escaped, now(), now())";
+    postgres_query
+      POST
+      "INSERT INTO reports
+         (remote_addr, data, blocked_uri, disposition, document_uri,
+         effective_directive, original_policy, referrer, status_code,
+         violated_directive, created_at, updated_at)
+       SELECT $remote_addr_escaped AS remote_addr,
+              $request_escaped AS data,
+              rep->'blocked-uri' AS blocked_uri,
+              rep->'disposition' AS disposition,
+              rep->'document-uri' AS document_uri,
+              rep->'effective-directive' AS effective_directive,
+              rep->'original-policy' AS original_policy,
+              rep->'referrer' AS referrer,
+              to_number(rep->>'status-code', '999') AS status_code,
+              rep->'violated-directive' AS violated_directive,
+              now() AS created_at,
+              now() AS updated_at
+       FROM json_extract_path($request_escaped::json, 'csp-report') as rep";
     postgres_output none;
+    postgres_rewrite POST no_changes 500;
+    postgres_rewrite POST changes 201;
   }
 
   location = /dump {
