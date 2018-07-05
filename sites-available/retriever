@@ -24,7 +24,8 @@ server {
       "INSERT INTO reports
          (remote_addr, data, blocked_uri, disposition, document_uri,
          effective_directive, original_policy, referrer, status_code,
-         violated_directive, created_at, updated_at)
+         violated_directive, source_file, line_number, column_number,
+         created_at, updated_at)
        SELECT $remote_addr_escaped AS remote_addr,
               $request_escaped AS data,
               rep->'blocked-uri' AS blocked_uri,
@@ -35,6 +36,9 @@ server {
               rep->'referrer' AS referrer,
               to_number(rep->>'status-code', '999') AS status_code,
               rep->'violated-directive' AS violated_directive,
+              rep->'source-file' AS source_file,
+              (rep->'line-number')::text::integer AS line_number,
+              (rep->'column-number')::text::integer AS column_number,
               now() AS created_at,
               now() AS updated_at
        FROM json_extract_path($request_escaped::json, 'csp-report') as rep";
