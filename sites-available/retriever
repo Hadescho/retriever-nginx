@@ -9,18 +9,25 @@ server {
   access_log logs/localhost.access.log combined;
 
   location = /report {
+    include 'check_rules';
+
     add_header Content-Type text/plain;
     postgres_pass database;
     read_request_body;
+
     if ($request_method != POST) {
+      add_header Allow POST;
       return 405;
     }
+
+    error_log naxsi.log;
+
+    BasicRule wl:1004;
 
     postgres_escape $remote_addr_escaped $remote_addr;
     postgres_escape $request_escaped $request_body;
 
     postgres_query
-      POST
       "INSERT INTO reports
          (remote_addr, data, blocked_uri, disposition, document_uri,
          effective_directive, original_policy, referrer, status_code,
@@ -42,8 +49,9 @@ server {
               now() AS created_at,
               now() AS updated_at
        FROM json_extract_path($request_escaped::json, 'csp-report') as rep";
+
     postgres_output none;
-    postgres_rewrite POST no_changes 500;
+    postgres_rewrite POST no_changes 400;
     postgres_rewrite POST changes 201;
   }
 
@@ -51,5 +59,9 @@ server {
     add_header Content-Security-Policy "style-src http://localhost; report-uri http://localhost:27027/report";
     add_header Content-Type text/html;
     return 200 "<html><head><link rel='stylesheet' type='text/css' href='https://www.abv.bg/css/styles_20180329.css'></head></html>";
+  }
+
+  location = /RequestDenied {
+    return 418;
   }
 }

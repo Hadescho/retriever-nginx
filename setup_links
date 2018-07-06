@@ -22,6 +22,12 @@ if [ -h $naxsi_rules -o -f $naxsi_rules ]; then
   rm $naxsi_rules
 fi
 
+check_rules=$nginx_config_dir/check_rules
+if [ -h $check_rules -o -f $check_rules ]; then
+  echo "Removing $check_rules"
+  rm $check_rules
+fi
+
 
 echo "Linking $current_file_dir/nginx.conf to $nginx_config_dir/nginx.conf"
 ln -s -T "$current_file_dir"/nginx.conf $conf
@@ -37,6 +43,9 @@ ln -s -T "$current_file_dir"/sites-available/retriever $sites_available/retrieve
 
 echo "Linking $current_file_dir/naxsi_core.rules to $nginx_config_dir/naxsi_core.rules"
 ln -s -T "$current_file_dir"/naxsi_core.rules $naxsi_rules
+
+echo "Linking $current_file_dir/check_rules to $nginx_config_dir/check_rules"
+ln -s -T "$current_file_dir"/check_rules $check_rules
 
 sites_enabled=$nginx_config_dir/sites-enabled
 if [ ! -d $sites_enabled ];then
