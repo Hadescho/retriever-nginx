@@ -47,29 +47,6 @@ server {
     postgres_rewrite POST changes 201;
   }
 
-  location = /dump {
-    allow 127.0.0.0/8;
-    deny all;
-    add_header Content-Type text/plain;
-    postgres_pass database;
-    postgres_output text;
-    postgres_query "SELECT * FROM reports";
-  }
-
-  location = / {
-    add_header Content-Type text/plain;
-    return 200;
-  }
-
-  location = /test {
-    allow 127.0.0.0/8;
-    deny all;
-    add_header Content-Type text/plain;
-    read_request_body;
-    set $resp "$request_body ____ stuff";
-    return 200 $resp;
-  }
-
   location = /csp_test {
     add_header Content-Security-Policy "style-src http://localhost; report-uri http://localhost:27027/report";
     add_header Content-Type text/html;
