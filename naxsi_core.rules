@@ -1,0 +1,7 @@
+MainRule "str:w3af.sourceforge.net" "msg:DN SCAN w3af User Agent" "mz:$HEADERS_VAR:User-Agent" "s:$UWA:8" id:42000041;
+
+CheckRule "$SQL >= 8" BLOCK;
+CheckRule "$RFI >= 8" BLOCK;
+CheckRule "$TRAVERSAL >= 4" BLOCK;
+CheckRule "$EVADE >= 4" BLOCK;
+CheckRule "$XSS >= 8" BLOCK;

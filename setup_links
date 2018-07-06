@@ -16,6 +16,12 @@ if [ -h $retriever -o -f $retriever ]; then
   rm $retriever
 fi
 
+naxsi_rules=$nginx_config_dir/naxsi_core.rules
+if [ -h $naxsi_rules -o -f $naxsi_rules ]; then
+  echo "Removing $naxsi_rules"
+  rm $naxsi_rules
+fi
+
 
 echo "Linking $current_file_dir/nginx.conf to $nginx_config_dir/nginx.conf"
 ln -s -T "$current_file_dir"/nginx.conf $conf
@@ -28,6 +34,9 @@ fi
 
 echo "Linking $current_file_dir/sites-available/retriever to $sites_available/retriever"
 ln -s -T "$current_file_dir"/sites-available/retriever $sites_available/retriever
+
+echo "Linking $current_file_dir/naxsi_core.rules to $nginx_config_dir/naxsi_core.rules"
+ln -s -T "$current_file_dir"/naxsi_core.rules $naxsi_rules
 
 sites_enabled=$nginx_config_dir/sites-enabled
 if [ ! -d $sites_enabled ];then
